@@ -13,20 +13,22 @@ datasource db {
 model User{
   @@map(name:"user")
   id Int @id @default(autoincrement())
-  name String
-  //Trainings
+  name String 
+  trainings Training[]
 }
 model Training{
   @@map(name:"training")
   id Int @id @default(autoincrement())
   date DateTime @default(now())// DO I WANT THE OPTION OF CHECKING ATTENDANCE FOR EVERY DAY OR ONLY FOR THE SAME DAY?
-  //Coach
-  //Users
+  coach Coach @relation(fields: [coachId],references: [id])
+  coachId Int
+  users User[]
 }
 model Coach{
   @@map(name:"coach")
   id Int @id @default(autoincrement())
-  name String
-  password String
-  //Trainings
+  name String @unique
+  password String 
+  trainings Training[]
+  isAdmin Boolean @default(false)
 }
