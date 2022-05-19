@@ -13,8 +13,9 @@ datasource db {
 model User{
   @@map(name:"user")
   id Int @id @default(autoincrement())
-  name String 
+  name String @unique
   trainings Training[]
+  active Boolean
 }
 model Training{
   @@map(name:"training")

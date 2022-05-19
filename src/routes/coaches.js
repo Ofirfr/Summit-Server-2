@@ -1,15 +1,16 @@
 //Anything related to coaches will be here
 const router = require("express").Router();
-const {check,validationResult} = require('express-validator');
 
 const JWT = require("jsonwebtoken")
 const bcrypt = require('bcrypt');
-const checkAuth = require("./checkToken");
 
 const {PrismaClient} = require('@prisma/client')
 const {coach} =new PrismaClient();
 
 const dotenv = require('dotenv');
+const checkToken = require('../util/checkToken')
+
+const {isAdminCheck} = require("../util/checkAdmin")
 dotenv.config();
 
 
@@ -19,8 +20,7 @@ router.post("/Login",
     async (req,res)=>{
     const {coachName,password} =req.body;
 
-    hashedPassword = await bcrypt.hash(password,10);
-    console.log(hashedPassword);
+    // Get password of coach
     const checkPassword = await coach.findFirst({
         where:{
             name:coachName,
@@ -29,24 +29,26 @@ router.post("/Login",
             password:true
         }
     })
+    // Not found = no coach instance, invalid
     if(!checkPassword){
         return res.status(400).json({
             errors:[{
-                msg: "Coach doesnt exist"
+                msg: "Invalid credentials"
             }]
         })
     }
+    // Check if password matches
     if(!(await bcrypt.compare(password,checkPassword.password))){
         return res.status(400).json({
             errors:[{
-                msg: "Password doesnt match coach"
+                msg: "Invalid credentials"
             }]
         })
     }
-
+    // Create jwt for the coach
     const token = await JWT.sign({"name":coachName},process.env.secret,{expiresIn:3600})
 
-    console.log(`Coach ${coachName} logged in`);
+    console.log(`Coach ${coachName} logged in.`);
     return res.json({token})
     
 });
@@ -54,14 +56,9 @@ router.post("/Login",
 
 // Add coach
 // Only admin can add coach
-router.post('/AddCoach',checkAuth,async (req,res)=>{
+router.post('/AddCoach',checkToken,async (req,res)=>{
     //Check if user is admin
-    const isAdmin = await coach.findFirst({
-        where:{
-            name:req.name,
-            isAdmin:true
-        }
-    })
+    const isAdmin = await isAdminCheck(req);
     if (!isAdmin){
         return res.status(400).json({
             errors:[{

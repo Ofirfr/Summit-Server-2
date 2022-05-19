@@ -2,5 +2,5 @@
 
 //Get attendance of training
 
-//Add/remove users to training
+//Add/remove users from training
 

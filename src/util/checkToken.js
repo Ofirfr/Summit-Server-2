@@ -16,7 +16,7 @@ module.exports = async (req, res, next) => {
 
     try {
         const connection = await jwt.verify(token, process.env.secret)
-        req.name = connection.name
+        req.loggedCoach = connection.name
         next()
     } catch (error) {
         res.status(400).json({

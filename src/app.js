@@ -1,6 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const createAdmin = require('./createAdmin')
+const createAdmin = require('./util/createAdmin')
 
 dotenv.config();
 
@@ -9,7 +9,8 @@ const main = async ()=>{
     await createAdmin();
     app = express();
     app.use(express.json());
-    app.use('/coach', require("./routes/coaches.js"))
+    app.use('/coach', require("./routes/coaches.js"));
+    app.use('/user',require('./routes/users.js'));
 
     app.get('/',(req,res)=>{
        res.send("Hello there");
