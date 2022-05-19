@@ -5,7 +5,7 @@ const {coach} =new PrismaClient();
 const isAdminCheck = async (req)=>{
     const isAdmin = await coach.findFirst({
         where:{
-            name:req.loggedCoach,
+            coachName:req.loggedCoach,
             isAdmin:true
         }
     })

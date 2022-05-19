@@ -13,7 +13,7 @@ datasource db {
 model User{
   @@map(name:"user")
   id Int @id @default(autoincrement())
-  name String @unique
+  userName String @unique
   trainings Training[]
   active Boolean
 }
@@ -28,7 +28,7 @@ model Training{
 model Coach{
   @@map(name:"coach")
   id Int @id @default(autoincrement())
-  name String @unique
+  coachName String @unique
   password String 
   trainings Training[]
   isAdmin Boolean @default(false)

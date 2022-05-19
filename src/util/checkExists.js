@@ -1,13 +1,23 @@
-const {PrismaClient, prisma} = require('@prisma/client')
-const {user} =new PrismaClient();
+const {PrismaClient} = require('@prisma/client')
+const {user,training} =new PrismaClient();
 
 // Check if user with the name given exists
 const userExistsCheck =async (userName)=>{
     userExists =await user.findFirst({
         where:{
-            name : userName
+            userName
         }
     });
     return userExists!=null;
 }
-module.exports = {userExistsCheck}
+const getTrainingInstance = async (date,coachId)=>{
+    trainingInstance = await training.findFirst({
+        where:{
+            coachId,
+            date:new Date(date)
+        }
+    });
+    return trainingInstance;
+
+}
+module.exports = {userExistsCheck,getTrainingInstance}

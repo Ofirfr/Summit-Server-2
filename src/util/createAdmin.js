@@ -16,7 +16,7 @@ const createAdmin = async ()=>{
     // Check if this admin is already added
     const coachExists = await coach.findFirst({
         where:{
-            name:adminName
+            coachName:adminName
         }
     })
     if(coachExists){
@@ -28,7 +28,7 @@ const createAdmin = async ()=>{
     console.log("Created admin: "+ adminName)
     await coach.create({
         data:{
-            name:adminName,
+            coachName:adminName,
             password:hashedPassword,
             isAdmin:true
         }

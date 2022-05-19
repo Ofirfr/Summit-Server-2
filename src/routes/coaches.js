@@ -21,16 +21,17 @@ router.post("/Login",
     const {coachName,password} =req.body;
 
     // Get password of coach
-    const checkPassword = await coach.findFirst({
+    const coachInstance = await coach.findFirst({
         where:{
-            name:coachName,
+            coachName,
         },
         select:{
-            password:true
+            password:true,
+            id:true
         }
     })
     // Not found = no coach instance, invalid
-    if(!checkPassword){
+    if(!coachInstance){
         return res.status(400).json({
             errors:[{
                 msg: "Invalid credentials"
@@ -38,15 +39,16 @@ router.post("/Login",
         })
     }
     // Check if password matches
-    if(!(await bcrypt.compare(password,checkPassword.password))){
+    if(!(await bcrypt.compare(password,coachInstance.password))){
         return res.status(400).json({
             errors:[{
                 msg: "Invalid credentials"
             }]
         })
     }
+
     // Create jwt for the coach
-    const token = await JWT.sign({"name":coachName},process.env.secret,{expiresIn:3600})
+    const token = await JWT.sign({"name":coachName,"id":coachInstance.id},process.env.secret,{expiresIn:3600})
 
     console.log(`Coach ${coachName} logged in.`);
     return res.json({token})
@@ -88,7 +90,7 @@ router.post('/AddCoach',checkToken,async (req,res)=>{
     //Check coach doesnt exist
     const coachExists = await coach.findFirst({
         where:{
-            name:coachName
+            coachName
         }
     })
     if(coachExists){
@@ -104,7 +106,7 @@ router.post('/AddCoach',checkToken,async (req,res)=>{
     const hashedPassword = await bcrypt.hash(password,10);
     await coach.create({
         data:{
-            name:coachName,
+            coachName,
             password:hashedPassword
         }
     })

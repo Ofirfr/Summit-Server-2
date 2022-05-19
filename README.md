@@ -1,3 +1,3 @@
 #TODO
-1.Create links in schema.prisma
-2.Complete coach login and add coach
+1. Complete trainings file and users file
+2. Check with mom for any changes needed

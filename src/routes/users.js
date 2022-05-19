@@ -37,7 +37,7 @@ router.post('/AddUser',checkToken,async (req,res)=>{
     // Add user as active
     await user.create({
         data: {
-            name:userName,
+            userName,
             active : true
         }
     })
@@ -74,7 +74,7 @@ router.post("/ChangeState",checkToken,async (req,res)=>{
     // Find current state
     const changedUser = await user.findFirst({
         where:{
-            name:userName
+            userName
         },
         select:{
             id:true,

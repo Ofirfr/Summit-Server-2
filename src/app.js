@@ -11,6 +11,7 @@ const main = async ()=>{
     app.use(express.json());
     app.use('/coach', require("./routes/coaches.js"));
     app.use('/user',require('./routes/users.js'));
+    app.use('/training',require("./routes/trainings.js"));
 
     app.get('/',(req,res)=>{
        res.send("Hello there");
