@@ -7,15 +7,14 @@ const {user} =new PrismaClient();
 const dotenv = require('dotenv');
 
 const checkToken= require("../util/checkToken");
-const {isAdminCheck} = require("../util/checkAdmin")
-const {userExistsCheck} = require("../util/checkExists")
+const {userExistsCheck,getDistrictInstance} = require("../util/checkExists")
 
 dotenv.config();
 //Add user
 //Only admin can add users
 router.post('/AddUser',checkToken,async (req,res)=>{
     // Check if user is admin
-    isAdmin = isAdminCheck(req);
+    isAdmin = req.isAdmin;
     if (!isAdmin){
         return res.status(400).json({
             errors:[{
@@ -23,10 +22,19 @@ router.post('/AddUser',checkToken,async (req,res)=>{
             }]
         })
     }
-    // Check if user exists already
-    userName = req.body;
-    userName = userName.userName;// Take the string value of the json name value
-    userExists = await userExistsCheck(userName);
+    
+    const {userName,mainDistrict} = req.body;
+
+    // Check all data was filled
+    if(userName==undefined||mainDistrict==undefined){
+        return res.status(400).json({
+            errors:[{
+                msg: "Please fill up all data"
+            }]
+        })
+    }
+    // Check if user exists already 
+    const userExists = await userExistsCheck(userName);
     if (userExists){
         return res.status(400).json({
             errors:[{
@@ -34,11 +42,23 @@ router.post('/AddUser',checkToken,async (req,res)=>{
             }]
         })
     }
+    // Check if district exists
+
+    const districtInstance = await getDistrictInstance(mainDistrict);
+    if (!districtInstance){
+        return res.status(400).json({
+            errors:[{
+                msg: "This district doesnt exist"
+            }]
+        })
+    }
+
     // Add user as active
     await user.create({
         data: {
             userName,
-            active : true
+            active : true,
+            districtId:districtInstance.id
         }
     })
     console.log(`User ${userName} added.`);
@@ -51,7 +71,7 @@ router.post('/AddUser',checkToken,async (req,res)=>{
 //Only admin can change state
 router.post("/ChangeState",checkToken,async (req,res)=>{
     //Check if user is admin
-    isAdmin = await isAdminCheck(req);
+    isAdmin = req.isAdmin;
     if (!isAdmin){
         return res.status(400).json({
             errors:[{
@@ -95,7 +115,23 @@ router.post("/ChangeState",checkToken,async (req,res)=>{
     res.status(200).send(`Changed active state of user ${userName} to ${!changedUser.active}`)
 })
 
-//Get user trainings
+
+// Get all users
+router.get('/GetAllUsers',checkToken,async (req,res)=>{
+    isAdmin = req.isAdmin;
+    if (!isAdmin){
+        return res.status(400).json({
+            errors:[{
+                msg:"Must be admin to get all users"
+            }]
+        })
+    }
+    const allUsers = await user.findMany();
+    console.log("Sent all users list to "+req.loggedCoach);
+    res.status(200).json(allUsers);
+})
+
+
 
 
 

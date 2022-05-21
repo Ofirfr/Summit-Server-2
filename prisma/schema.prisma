@@ -14,15 +14,21 @@ model User{
   @@map(name:"user")
   id Int @id @default(autoincrement())
   userName String @unique
+  mainDistrict District @relation(fields: [districtId],references: [id])
+  districtId Int
   trainings Training[]
   active Boolean
 }
 model Training{
   @@map(name:"training")
   id Int @id @default(autoincrement())
-  date DateTime @default(now())// DO I WANT THE OPTION OF CHECKING ATTENDANCE FOR EVERY DAY OR ONLY FOR THE SAME DAY?
+  date DateTime @default(now())
   coach Coach @relation(fields: [coachId],references: [id])
   coachId Int
+  district District @relation(fields: [districtId],references: [id])
+  districtId Int
+  type TrainingType @relation(fields: [typeId],references: [id])
+  typeId Int
   users User[]
 }
 model Coach{
@@ -32,4 +38,17 @@ model Coach{
   password String 
   trainings Training[]
   isAdmin Boolean @default(false)
+}
+model TrainingType{
+  @@map("trainingType")
+  id Int @id @default(autoincrement())
+  type String @unique
+  trainings Training[]
+}
+model District{
+  @@map("district")
+  id Int @id @default(autoincrement())
+  name String @unique
+  trainings Training[]
+  users User[]
 }

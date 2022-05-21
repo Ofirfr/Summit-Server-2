@@ -3,9 +3,9 @@ const jwt = require("jsonwebtoken");
 module.exports = async (req, res, next) => {
     const token = req.header('x-auth-token')
 
-    // CHECK IF WE EVEN HAVE A TOKEN
+    // Check if token filled is not empty
     if(!token){
-        res.status(401).json({
+        return res.status(400).json({
             errors: [
                 {
                     msg: "No token found"
@@ -18,9 +18,10 @@ module.exports = async (req, res, next) => {
         const connection = await jwt.verify(token, process.env.secret)
         req.loggedCoach = connection.name
         req.loggedCoachId = connection.id
+        req.isAdmin = connection.isAdmin
         next()
     } catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             errors: [
                 {
                     msg: 'Invalid Token'

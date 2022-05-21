@@ -20,6 +20,15 @@ router.post("/Login",
     async (req,res)=>{
     const {coachName,password} =req.body;
 
+    // Check that all data was filled
+    if (coachName==undefined||password==undefined){
+        return res.status(400).json({
+            errors:[{
+                msg:"Please fill up all the data"
+            }]
+        })
+    }
+
     // Get password of coach
     const coachInstance = await coach.findFirst({
         where:{
@@ -48,7 +57,7 @@ router.post("/Login",
     }
 
     // Create jwt for the coach
-    const token = await JWT.sign({"name":coachName,"id":coachInstance.id},process.env.secret,{expiresIn:3600})
+    const token = await JWT.sign({"name":coachName,"id":coachInstance.id,"isAdmin":await isAdminCheck(req)},process.env.secret,{expiresIn:3600})
 
     console.log(`Coach ${coachName} logged in.`);
     return res.json({token})
@@ -60,7 +69,7 @@ router.post("/Login",
 // Only admin can add coach
 router.post('/AddCoach',checkToken,async (req,res)=>{
     //Check if user is admin
-    const isAdmin = await isAdminCheck(req);
+    const isAdmin = req.isAdmin;
     if (!isAdmin){
         return res.status(400).json({
             errors:[{
@@ -70,6 +79,15 @@ router.post('/AddCoach',checkToken,async (req,res)=>{
     }
 
     const {coachName,password} = req.body
+
+    // Check that all data was filled
+    if (coachName==undefined||password==undefined){
+        return res.status(400).json({
+            errors:[{
+                msg:"Please fill up all the data"
+            }]
+        })
+    }
 
     //Check credentials match requierment
     if(password.length<5){

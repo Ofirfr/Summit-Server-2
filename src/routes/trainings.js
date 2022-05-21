@@ -5,14 +5,43 @@ const {PrismaClient} = require('@prisma/client')
 const {training} =new PrismaClient();
 
 const checkToken= require("../util/checkToken");
-const {userExistsCheck,getTrainingInstance} = require("../util/checkExists")
+const {userExistsCheck,getTrainingInstance,getDistrictInstance,getTypeInstance} = require("../util/checkExists")
 
 
 //Get attendance of training
 router.get('/GetAttendance',checkToken,async (req,res)=>{
     // just return the list of users in the training
-    const {date,coachId} = req.body;
-    const trainingInstance = await getTrainingInstance(date,coachId);
+    const {date,coachId,district,type} = req.body;
+    // Check that all data was filled
+    if (date==undefined||coachId==undefined||district==undefined||type==undefined){
+        return res.status(400).json({
+            errors:[{
+                msg:`Please fill up all data`
+            }]
+        })
+    }
+    // Check district exists
+    const districtInstance = await getDistrictInstance(district);
+    if(!districtInstance){
+        return res.status(400).json({
+            errors:[{
+                msg:`This district doesnt exist`
+            }]
+        });
+    }
+
+    // Check type exists
+    const typeInstance = await getTypeInstance(type);
+    if(!typeInstance){
+        return res.status(400).json({
+            errors:[{
+                msg:`This type doesnt exist`
+            }]
+        });
+    }
+
+    // Check if there was such training
+    const trainingInstance = await getTrainingInstance(date,coachId,districtInstance.id,typeInstance.id);
     if(!trainingInstance){
         return res.status(400).json({
             errors:[{
@@ -37,42 +66,76 @@ router.get('/GetAttendance',checkToken,async (req,res)=>{
     console.log(`Sent attendance for training in ${date} by coach id ${trainingInstance.coachId}`)
     return res.status(200).json(attendance)
 })
+
+
 // Set list of users as the attendance for the training
 router.post('/UpdateAttendance',checkToken,async (req,res)=>{
-    // get list of users to mark and training by coach and date
-    const {usersToAdd,date} = req.body;
+    // Get list of users to mark and training by coach and date
+    const {usersToMark,date,districtName,type} = req.body;
     const coachId = req.loggedCoachId;
 
-    // check if training exists, if not - create it.
-    trainingInstance = await getTrainingInstance(date,coachId);
+    if (date==undefined||districtName==undefined||type==undefined){
+        return res.status(400).json({
+            errors:[{
+                msg:`Please fill up all data`
+            }]
+        })
+    }
+
+    // Check if district exists
+    const districtInstance = await getDistrictInstance(districtName);
+    if (!districtInstance){
+        return res.status(400).json({
+            errors:[{
+                msg:"District doesnt exists"
+            }]
+        })
+    }
+
+     // Check type exists
+     const typeInstance = await getTypeInstance(type);
+     if(!typeInstance){
+         return res.status(400).json({
+             errors:[{
+                 msg:`This type doesnt exist`
+             }]
+         });
+     }
+
+
+    // Check if training exists, if not - create it.
+    const trainingInstance = await getTrainingInstance(date,coachId,districtInstance.id,typeInstance.id);
     if (!trainingInstance){
         trainingInstance=await training.create({
             data:{
                 coachId: coachId,
-                date: new Date(date)
+                date: new Date(date),
+                districtId:districtInstance.id,
+                typeId:typeInstance.id
             }
         })
     }
 
     // if user in list doesnt exist return error
-    for (let i=0;i<usersToAdd.length;i++){
-        if(!userExistsCheck(usersToAdd[i].userName)){
+    for (let i=0;i<usersToMark.length;i++){
+        if(!await userExistsCheck(usersToMark[i].userName)){
             return res.status(400).json({
                 errors:[{
-                    msg:`User ${usersToAdd[i].userName} doesnt exist`
+                    msg:`User ${usersToMark[i].userName} doesnt exist`
                 }]
             })
         }
     }
 
     // Update the training attendance by the users sent
+    console.log(usersToMark)
     await training.update({
         where:{
             id:trainingInstance.id
         },
         data:{
             users:{
-                connect:usersToAdd
+                connect:usersToMark
             }
         }
     })
