@@ -11,9 +11,9 @@ const {userExistsCheck,getTrainingInstance,getDistrictInstance,getTypeInstance} 
 //Get attendance of training
 router.get('/GetAttendance',checkToken,async (req,res)=>{
     // just return the list of users in the training
-    const {date,coachId,district,type} = req.body;
+    const {date,district,type} = req.query;
     // Check that all data was filled
-    if (date==undefined||coachId==undefined||district==undefined||type==undefined){
+    if (date==undefined||district==undefined||type==undefined){
         return res.status(400).json({
             errors:[{
                 msg:`Please fill up all data`
@@ -41,7 +41,7 @@ router.get('/GetAttendance',checkToken,async (req,res)=>{
     }
 
     // Check if there was such training
-    const trainingInstance = await getTrainingInstance(date,coachId,districtInstance.id,typeInstance.id);
+    const trainingInstance = await getTrainingInstance(date,req.loggedCoachId,districtInstance.id,typeInstance.id);
     if(!trainingInstance){
         return res.status(400).json({
             errors:[{
@@ -49,7 +49,7 @@ router.get('/GetAttendance',checkToken,async (req,res)=>{
             }]
         })
     }
-    // Get attendance by names from db
+    // Get attendance by names from db 
     const attendance = await training.findMany({
         where:{
             id:trainingInstance.id
@@ -63,7 +63,7 @@ router.get('/GetAttendance',checkToken,async (req,res)=>{
             }
         }
     })
-    console.log(`Sent attendance for training in ${date} by coach id ${trainingInstance.coachId}`)
+    console.log(`Sent attendance for training in ${date} in ${district} by coach ${req.loggedCoach}`)
     return res.status(200).json(attendance)
 })
 
@@ -73,8 +73,7 @@ router.post('/UpdateAttendance',checkToken,async (req,res)=>{
     // Get list of users to mark and training by coach and date
     const {usersToMark,date,districtName,type} = req.body;
     const coachId = req.loggedCoachId;
-
-    if (date==undefined||districtName==undefined||type==undefined){
+    if (date==undefined||districtName==undefined||type==undefined||usersToMark==undefined){
         return res.status(400).json({
             errors:[{
                 msg:`Please fill up all data`
@@ -104,7 +103,7 @@ router.post('/UpdateAttendance',checkToken,async (req,res)=>{
 
 
     // Check if training exists, if not - create it.
-    const trainingInstance = await getTrainingInstance(date,coachId,districtInstance.id,typeInstance.id);
+    var trainingInstance = await getTrainingInstance(date,coachId,districtInstance.id,typeInstance.id);
     if (!trainingInstance){
         trainingInstance=await training.create({
             data:{
@@ -126,17 +125,16 @@ router.post('/UpdateAttendance',checkToken,async (req,res)=>{
             })
         }
     }
-
     // Update the training attendance by the users sent
-    console.log(usersToMark)
     await training.update({
         where:{
             id:trainingInstance.id
         },
         data:{
             users:{
+                disconnect:trainingInstance.users,
                 connect:usersToMark
-            }
+            },
         }
     })
     console.log("Marked users as attendance")

@@ -1,5 +1,5 @@
-const {PrismaClient} = require('@prisma/client')
-const {user,training,district,trainingType} =new PrismaClient();
+const {PrismaClient} = require('@prisma/client');
+const {user,training,district,trainingType,coach} =new PrismaClient();
 
 // Check if user with the name given exists
 const userExistsCheck =async (userName)=>{
@@ -17,6 +17,18 @@ const getTrainingInstance = async (date,coachId,districtId,typeId)=>{
             date:new Date(date),
             districtId,
             typeId
+        }
+        ,select:{
+            id:true,
+            coachId:true,
+            date:true,
+            districtId:true,
+            typeId:true,
+            users:{
+                select:{
+                    id:true
+                }
+            }
         }
     });
     return trainingInstance;

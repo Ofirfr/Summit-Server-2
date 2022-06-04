@@ -57,7 +57,7 @@ router.post("/Login",
     }
 
     // Create jwt for the coach
-    const token = await JWT.sign({"name":coachName,"id":coachInstance.id,"isAdmin":await isAdminCheck(req)},process.env.secret,{expiresIn:3600})
+    const token = await JWT.sign({"name":coachName,"id":coachInstance.id,"isAdmin":await isAdminCheck(req)},process.env.secret)
 
     console.log(`Coach ${coachName} logged in.`);
     return res.json({token})

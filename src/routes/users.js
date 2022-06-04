@@ -126,7 +126,19 @@ router.get('/GetAllUsers',checkToken,async (req,res)=>{
             }]
         })
     }
-    const allUsers = await user.findMany();
+    const allUsers = await user.findMany({
+        select:{
+            userName:true,
+            active:true,
+            id:true,
+            mainDistrict:{
+                select:
+                {
+                    name:true
+                }
+            }
+        }
+    });
     console.log("Sent all users list to "+req.loggedCoach);
     res.status(200).json(allUsers);
 })

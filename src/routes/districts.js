@@ -62,7 +62,7 @@ router.get('/GetDistricts',checkToken,async (req,res)=>{
 });
 
 router.get('/GetUsersByDistrict',checkToken,async (req,res)=>{
-    const {districtName} = req.body;
+    const {districtName} = req.query;
     // Check all data was filled
     if (districtName==undefined){
         return res.status(400).json({
@@ -102,7 +102,7 @@ router.get('/GetUsersByDistrict',checkToken,async (req,res)=>{
     res.status(200).json(users);
 });
 router.get("/GetUsersByOtherDistricts",checkToken,async (req,res)=>{
-    const {districtName} = req.body;
+    const {districtName} = req.query;
     // Check all data was filled
     if (districtName==undefined){
         return res.status(400).json({
