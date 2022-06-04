@@ -18,15 +18,18 @@ const main = async ()=>{
     app.use('/type',require('./routes/trainingTypes'));
 
     app.use('/',(req,res)=>{
-       res.send("Hello there");
+       res.send("Hello Hello");
     });
 
-    const sslServer = https.createServer({
+    /*const sslServer = https.createServer({
         key:fs.readFileSync('../cert/key.pem'),
         cert:fs.readFileSync('../cert/cert.pem')
     },app)
     sslServer.listen(port,()=>{
         console.log(`Server listening on  https://127.0.0.1:${port}`);
-    });
+    });*/
+    app.listen(port,()=>{
+        console.log(`Server listening on  http://127.0.0.1:${port}`)
+    })
 };
 main().then();

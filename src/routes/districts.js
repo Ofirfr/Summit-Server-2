@@ -4,7 +4,7 @@
 const router = require("express").Router();
 
 const {PrismaClient} = require('@prisma/client')
-const {district} =new PrismaClient();
+const {district,user} =new PrismaClient();
 
 const checkToken= require("../util/checkToken");
 const {getDistrictInstance} = require("../util/checkExists")
@@ -60,5 +60,90 @@ router.get('/GetDistricts',checkToken,async (req,res)=>{
     console.log("Sent district list to "+req.loggedCoach);
     res.status(200).json(districts);
 });
+
+router.get('/GetUsersByDistrict',checkToken,async (req,res)=>{
+    const {districtName} = req.body;
+    // Check all data was filled
+    if (districtName==undefined){
+        return res.status(400).json({
+            errors:[{
+                msg:"Please fiil up all data"
+            }]
+        })
+    }
+    // Get district Id
+    const districtInstance = await (district.findFirst({
+        select:{
+            id:true
+        },
+        where:{
+            name:districtName
+        }
+    }))
+    if(districtInstance == null){
+        return res.status(400).json({
+            errors:[{
+                msg:"District doesnt exist"
+            }]
+        })
+    }
+    const districtId = districtInstance.id;    
+    // Get users list
+    const users = await user.findMany({
+        select:{
+            userName:true
+        },
+        where:{
+            districtId,
+            active:true
+        }
+    })
+    console.log(`Sent users of district ${districtName} to ${req.loggedCoach}`)
+    res.status(200).json(users);
+});
+router.get("/GetUsersByOtherDistricts",checkToken,async (req,res)=>{
+    const {districtName} = req.body;
+    // Check all data was filled
+    if (districtName==undefined){
+        return res.status(400).json({
+            errors:[{
+                msg:"Please fiil up all data"
+            }]
+        })
+    }
+    // Get district Id
+    const districtInstance = await (district.findFirst({
+        select:{
+            id:true
+        },
+        where:{
+            name:districtName
+        }
+    }))
+    if(districtInstance == null){
+        return res.status(400).json({
+            errors:[{
+                msg:"District doesnt exist"
+            }]
+        })
+    }
+    const districtId = districtInstance.id;    
+    // Get users list
+    const users = await user.findMany({
+        select:{
+            userName:true
+        },
+        where:{
+            NOT:{
+                districtId,
+            },
+            active:true
+        }
+    })
+    console.log(`Sent users of district ${districtName} to ${req.loggedCoach}`)
+    res.status(200).json(users);
+})
+
+
 
 module.exports = router
