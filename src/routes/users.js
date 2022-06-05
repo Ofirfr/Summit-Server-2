@@ -7,7 +7,10 @@ const {user} =new PrismaClient();
 const dotenv = require('dotenv');
 
 const checkToken= require("../util/checkToken");
-const {userExistsCheck,getDistrictInstance} = require("../util/checkExists")
+const {userExistsCheck,getDistrictInstance} = require("../util/checkExists");
+
+const validatorEmail = require("email-validator");
+const validatePhoneNumber = require('validate-phone-number-node-js');
 
 dotenv.config();
 //Add user
@@ -23,16 +26,35 @@ router.post('/AddUser',checkToken,async (req,res)=>{
         })
     }
     
-    const {userName,mainDistrict} = req.body;
-
+    const {userName,mainDistrict,email,phoneNumber} = req.body;
+  
     // Check all data was filled
-    if(userName==undefined||mainDistrict==undefined){
+    if(userName==undefined||mainDistrict==undefined||email==undefined||phoneNumber==undefined){
         return res.status(400).json({
             errors:[{
                 msg: "Please fill up all data"
             }]
         })
     }
+
+    // Check email is valid
+    if(!validatorEmail.validate(email)){
+        return res.status(400).json({
+            errors:[{
+                msg: "Email is not valid"
+            }]
+        })
+    }
+
+    //Check that phone number is valid
+    if(!validatePhoneNumber.validate(phoneNumber)){
+        return res.status(400).json({
+            errors:[{
+                msg: "Phone Number is not valid"
+            }]
+        })
+    }
+
     // Check if user exists already 
     const userExists = await userExistsCheck(userName);
     if (userExists){
@@ -42,8 +64,8 @@ router.post('/AddUser',checkToken,async (req,res)=>{
             }]
         })
     }
-    // Check if district exists
 
+    // Check if district exists
     const districtInstance = await getDistrictInstance(mainDistrict);
     if (!districtInstance){
         return res.status(400).json({
@@ -58,7 +80,9 @@ router.post('/AddUser',checkToken,async (req,res)=>{
         data: {
             userName,
             active : true,
-            districtId:districtInstance.id
+            districtId:districtInstance.id,
+            phoneNumber,
+            email
         }
     })
     console.log(`User ${userName} added.`);
