@@ -10,7 +10,7 @@ const {coach} =new PrismaClient();
 const dotenv = require('dotenv');
 const checkToken = require('../util/checkToken')
 
-const {isAdminCheck} = require("../util/checkAdmin")
+const {isAdminCheck} = require("../util/checkAdmin");
 dotenv.config();
 
 
@@ -56,8 +56,8 @@ router.post("/Login",
         })
     }
 
-    // Create jwt for the coach
-    const token = await JWT.sign({"name":coachName,"id":coachInstance.id,"isAdmin":await isAdminCheck(req)},process.env.secret)
+    // Create jwt for the coach   
+    const token = JWT.sign({"name":coachName,"id":coachInstance.id,"isAdmin":coachInstance.isAdmin},process.env.secret)
 
     console.log(`Coach ${coachName} logged in.`);
     return res.json({token})
@@ -69,8 +69,8 @@ router.post("/Login",
 // Only admin can add coach
 router.post('/AddCoach',checkToken,async (req,res)=>{
     //Check if user is admin
-    const isAdmin = req.isAdmin;
-    if (!isAdmin){
+    const adminCheck = req.isAdmin;
+    if (!adminCheck){
         return res.status(400).json({
             errors:[{
                 msg:"Must be admin to add coach"
@@ -78,10 +78,10 @@ router.post('/AddCoach',checkToken,async (req,res)=>{
         })
     }
 
-    const {coachName,password} = req.body
+    const {coachName,password,isAdmin} = req.body
 
     // Check that all data was filled
-    if (coachName==undefined||password==undefined){
+    if (coachName==undefined||password==undefined||isAdmin==undefined){
         return res.status(400).json({
             errors:[{
                 msg:"Please fill up all the data"
@@ -125,7 +125,8 @@ router.post('/AddCoach',checkToken,async (req,res)=>{
     await coach.create({
         data:{
             coachName,
-            password:hashedPassword
+            password:hashedPassword,
+            isAdmin
         }
     })
     console.log(`Coach ${coachName} added.`);
@@ -133,6 +134,25 @@ router.post('/AddCoach',checkToken,async (req,res)=>{
         `Coach ${coachName} added.`
     )
 })
-
+router.get('/GetAllCoaches',checkToken,async (req,res)=>{
+     //Check if user is admin
+     const isAdmin = req.isAdmin;
+     console.log(isAdmin);
+     if (!isAdmin){
+         return res.status(400).json({
+             errors:[{
+                 msg:"Must be admin to get coaches"
+             }]
+         })
+     }
+     const coaches = await coach.findMany({
+         select:{
+             coachName:true,
+             isAdmin:true
+         }
+     })
+     console.log(`Sent coaches to ${req.loggedCoach}`)
+     return res.status(200).json(coaches)
+})
 
 module.exports = router

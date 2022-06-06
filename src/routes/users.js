@@ -17,14 +17,14 @@ dotenv.config();
 //Only admin can add users
 router.post('/AddUser',checkToken,async (req,res)=>{
     // Check if user is admin
-    isAdmin = req.isAdmin;
+    /*isAdmin = req.isAdmin;
     if (!isAdmin){
         return res.status(400).json({
             errors:[{
                 msg:"Must be admin to add user"
             }]
         })
-    }
+    }*/
     
     const {userName,mainDistrict,email,phoneNumber} = req.body;
   

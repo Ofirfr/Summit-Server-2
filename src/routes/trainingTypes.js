@@ -30,7 +30,7 @@ router.post('/AddTrainingType',checkToken,async (req,res)=>{
         })
     }
     // Check if type already exists
-    const typeInstance = await getTypeInstance();
+    const typeInstance = await getTypeInstance(type);
     if (typeInstance){
         return res.status(400).json({
             errors:[{
