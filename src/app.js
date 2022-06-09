@@ -16,7 +16,8 @@ const main = async ()=>{
     app.use('/training',require("./routes/trainings.js"));
     app.use('/district',require('./routes/districts'));
     app.use('/type',require('./routes/trainingTypes'));
-
+    app.use('/stats',require('./routes/stats'));
+    
     app.use('/',(req,res)=>{
        res.send("Hello Hello");
     });

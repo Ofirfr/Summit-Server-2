@@ -36,7 +36,8 @@ router.post("/Login",
         },
         select:{
             password:true,
-            id:true
+            id:true,
+            isAdmin:true
         }
     })
     // Not found = no coach instance, invalid
@@ -56,7 +57,7 @@ router.post("/Login",
         })
     }
 
-    // Create jwt for the coach   
+    // Create jwt for the coach
     const token = JWT.sign({"name":coachName,"id":coachInstance.id,"isAdmin":coachInstance.isAdmin},process.env.secret)
 
     console.log(`Coach ${coachName} logged in.`);
@@ -137,7 +138,6 @@ router.post('/AddCoach',checkToken,async (req,res)=>{
 router.get('/GetAllCoaches',checkToken,async (req,res)=>{
      //Check if user is admin
      const isAdmin = req.isAdmin;
-     console.log(isAdmin);
      if (!isAdmin){
          return res.status(400).json({
              errors:[{
