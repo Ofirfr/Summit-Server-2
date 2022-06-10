@@ -23,25 +23,27 @@ router.get("/StatsByParams",checkToken, async (req,res) =>{
     const {districtName,typeName,coachName,startDate,endDate} = req.query;
     // Set up conditions for the search
     var conditions = {};
-    if (districtName!=undefined){
+    if (districtName!=undefined&&districtName!="Any"){
          var condition = {};
          condition["name"]=districtName;
          conditions["district"] = condition;
     }
-    if (typeName!=undefined){
+    if (typeName!=undefined&&typeName!="Any"){
         var condition = {};
          condition["type"]=typeName;
          conditions["type"] = condition;
     }
-    if (coachName!=undefined){
+    if (coachName!=undefined&&coachName!="Any"){
         var condition = {};
         condition["coachName"]=coachName;
         conditions["coach"] = condition;
     }
     if(startDate!=undefined&&endDate!=undefined){
         var condition = {};
-        condition["lte"]=new Date(new Date(endDate).getTime()+ 86400000);
-        condition["gte"]=new Date(startDate);
+        var startDateFormat = startDate.split('/');
+        var endDateFormat = endDate.trim().split('/');
+        condition["lte"]=new Date(new Date(endDateFormat[2],endDateFormat[1]-1,endDateFormat[0]).getTime()+ 86400000);
+        condition["gte"]=new Date(startDateFormat[2],startDateFormat[1]-1,startDateFormat[0]);
         conditions["date"] = condition;
     }
    // Fetch result
