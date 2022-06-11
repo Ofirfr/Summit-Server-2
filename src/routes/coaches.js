@@ -33,6 +33,7 @@ router.post("/Login",
     const coachInstance = await coach.findFirst({
         where:{
             coachName,
+            active:true
         },
         select:{
             password:true,
@@ -148,11 +149,72 @@ router.get('/GetAllCoaches',checkToken,async (req,res)=>{
      const coaches = await coach.findMany({
          select:{
              coachName:true,
-             isAdmin:true
+             isAdmin:true,
+             active:true
          }
      })
      console.log(`Sent coaches to ${req.loggedCoach}`)
      return res.status(200).json(coaches)
+});
+
+router.get('/GetActiveCoaches',checkToken,async (req,res)=>{
+    //Check if user is admin
+    const isAdmin = req.isAdmin;
+    if (!isAdmin){
+        return res.status(400).json({
+            errors:[{
+                msg:"Must be admin to get coaches"
+            }]
+        })
+    }
+    const coaches = await coach.findMany({
+        where:{
+            active:true
+        },
+        select:{
+            coachName:true,
+            isAdmin:true,
+        }
+    })
+    console.log(`Sent coaches to ${req.loggedCoach}`)
+    return res.status(200).json(coaches)
+});
+
+router.post('/ChangeCoachState',checkToken,async (req,res)=>{
+    //Check if user is admin
+    const isAdmin = req.isAdmin;
+    if (!isAdmin){
+        return res.status(400).json({
+            errors:[{
+                msg:"Must be admin to change coache state"
+            }]
+        })
+    }
+
+    const {coachName} = req.body;
+    //Check coach doesnt exist
+    const coachInstance = await coach.findFirst({
+        where:{
+            coachName
+        }
+    })
+    if(!coachInstance){
+       return res.status(400).json({
+        errors:[{
+            msg:"Coach doesnt exists"
+        }]
+       })
+    }
+    await coach.update({
+        where:{
+            coachName
+        },
+        data:{
+            active:!coachInstance.active
+        }
+    });
+    console.log(`Changed state of coach ${coachName} to ${!coachInstance.active}`)
+    res.status(200).send("Changed state of coach");
 })
 
 module.exports = router

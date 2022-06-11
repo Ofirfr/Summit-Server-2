@@ -105,10 +105,11 @@ router.post('/UpdateAttendance',checkToken,async (req,res)=>{
     // Check if training exists, if not - create it.
     var trainingInstance = await getTrainingInstance(date,coachId,districtInstance.id,typeInstance.id);
     if (!trainingInstance){
+        var dateFormat = date.split('/');
         trainingInstance=await training.create({
             data:{
                 coachId: coachId,
-                date: new Date(date),
+                date: new Date(dateFormat[2],dateFormat[1]-1,dateFormat[0]),
                 districtId:districtInstance.id,
                 typeId:typeInstance.id
             }

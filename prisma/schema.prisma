@@ -40,12 +40,14 @@ model Coach{
   password String 
   trainings Training[]
   isAdmin Boolean @default(false)
+  active Boolean @default(true)
 }
 model TrainingType{
   @@map("trainingType")
   id Int @id @default(autoincrement())
   type String @unique
   trainings Training[]
+  active Boolean @default(true)
 }
 model District{
   @@map("district")
@@ -53,4 +55,5 @@ model District{
   name String @unique
   trainings Training[]
   users User[]
+  active Boolean @default(true)
 }

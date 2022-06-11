@@ -11,10 +11,11 @@ const userExistsCheck =async (userName)=>{
     return userExists!=null;
 }
 const getTrainingInstance = async (date,coachId,districtId,typeId)=>{
+    var dateFormat = date.split('/');
     const trainingInstance = await training.findFirst({
         where:{
             coachId,
-            date:new Date(date),
+            date:new Date(dateFormat[2],dateFormat[1]-1,dateFormat[0]),
             districtId,
             typeId
         }

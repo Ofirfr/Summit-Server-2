@@ -51,15 +51,30 @@ router.post('/AddDistrict',checkToken,async (req,res)=>{
     res.status(200).send("District added succesfully")
 });
 
-router.get('/GetDistricts',checkToken,async (req,res)=>{
+router.get('/GetActiveDistricts',checkToken,async (req,res)=>{
+    const districts = await district.findMany({
+        where:{
+            active:true
+        },
+        select:{
+            name:true,
+        }
+    });
+    console.log("Sent active district list to "+req.loggedCoach);
+    res.status(200).json(districts);
+});
+
+router.get('/GetAllDistricts',checkToken,async (req,res)=>{
     const districts = await district.findMany({
         select:{
-            name:true
+            name:true,
+            active:true
         }
     });
     console.log("Sent district list to "+req.loggedCoach);
     res.status(200).json(districts);
 });
+
 
 router.get('/GetUsersByDistrict',checkToken,async (req,res)=>{
     const {districtName} = req.query;
@@ -144,6 +159,35 @@ router.get("/GetUsersByOtherDistricts",checkToken,async (req,res)=>{
     res.status(200).json(users);
 })
 
-
+router.post("/ChangeDistrictState",checkToken,async (req,res)=>{
+    const {districtName} = req.body;
+     // Get district Id
+     const districtInstance = await (district.findFirst({
+        select:{
+            id:true,
+            active:true
+        },
+        where:{
+            name:districtName
+        }
+    }))
+    if(!districtInstance == null){
+        return res.status(400).json({
+            errors:[{
+                msg:"District doesnt exist"
+            }]
+        })
+    }
+    await district.update({
+        where:{
+            id:districtInstance.id
+        },
+        data:{
+            active:!districtInstance.active
+        }
+    });
+    console.log(`Changed state of district ${districtName} to ${!districtInstance.active}`)
+    res.status(200).send("Changed state of district");
+})
 
 module.exports = router
