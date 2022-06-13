@@ -2,10 +2,9 @@
 const router = require("express").Router();
 
 const {PrismaClient} = require('@prisma/client');
-const {training} =new PrismaClient();
+const {training,user} =new PrismaClient();
 
 const checkToken= require("../util/checkToken");
-const {userExistsCheck,getTrainingInstance,getDistrictInstance,getTypeInstance} = require("../util/checkExists")
 
 
 router.get("/StatsByParams",checkToken, async (req,res) =>{
@@ -46,6 +45,7 @@ router.get("/StatsByParams",checkToken, async (req,res) =>{
         condition["gte"]=new Date(startDateFormat[2],startDateFormat[1]-1,startDateFormat[0]);
         conditions["date"] = condition;
     }
+
    // Fetch result
    const result = await training.findMany({
        where:conditions,
@@ -88,7 +88,56 @@ router.get("/StatsByUser",checkToken,async (req,res)=>{
              }]
          });
      }
-     
+    const {districtName,userName,startDate,endDate} = req.query;
+     // Set up conditions for the search
+     var conditions = {};
+     if (districtName!=undefined&&districtName!="Any"){
+          var condition = {};
+          condition["name"]=districtName;
+          conditions["mainDistrict"] = condition;
+     }
+     if (userName!=undefined&&userName!="Any"){
+         conditions["userName"]=userName;
+     }
+     if(startDate!=undefined&&endDate!=undefined){
+         var condition = {};
+         var dateCondition = {};
+
+         var startDateFormat = startDate.split('/');
+         var endDateFormat = endDate.trim().split('/');
+         dateCondition["lte"]=new Date(new Date(endDateFormat[2],endDateFormat[1]-1,endDateFormat[0]).getTime()+ 86400000);
+         dateCondition["gte"]=new Date(startDateFormat[2],startDateFormat[1]-1,startDateFormat[0]);
+
+         var someCondition = {};
+         someCondition["date"] = dateCondition;
+         condition["some"] = someCondition;
+         conditions["trainings"] = condition;
+     }
+     // Fetch Result
+     const result =  await user.findMany({
+        where:conditions,
+        select:{
+            userName:true,
+            _count:{
+                select:{
+                    trainings:true
+                }
+            },
+            trainings:{
+                select:{
+                    date:true
+                }
+            },
+            mainDistrict:{
+                select:{
+                    name:true
+                }
+            }
+
+        }
+     })
+     console.log(`Sent stats to ${req.loggedCoach}`)
+     res.json(result)
 });
 
 
