@@ -135,7 +135,7 @@ router.post("/ChangeState",checkToken,async (req,res)=>{
             active:!changedUser.active
         }
     });
-    console.log(`Changed active state of user ${userName} to ${!changedUser.active}`);
+    console.log(`Changed state of user`);
     res.status(200).send(`Changed active state of user ${userName} to ${!changedUser.active}`)
 })
 
