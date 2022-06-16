@@ -39,8 +39,9 @@ router.get("/StatsByParams",checkToken, async (req,res) =>{
     }
     if(startDate!=undefined&&endDate!=undefined){
         var condition = {};
-        var startDateFormat = startDate.split('/');
+        var startDateFormat = startDate.trim().split('/');
         var endDateFormat = endDate.trim().split('/');
+        console.log(startDate);
         condition["lte"]=new Date(new Date(endDateFormat[2],endDateFormat[1]-1,endDateFormat[0]).getTime()+ 86400000);
         condition["gte"]=new Date(startDateFormat[2],startDateFormat[1]-1,startDateFormat[0]);
         conditions["date"] = condition;
@@ -103,10 +104,18 @@ router.get("/StatsByUser",checkToken,async (req,res)=>{
          var condition = {};
          var dateCondition = {};
 
-         var startDateFormat = startDate.split('/');
+         var startDateFormat = startDate.trim().split('/');
+         var startDateInstance = new Date(startDateFormat[2],startDateFormat[1],startDateFormat[0]);
+         startDateInstance.setDate(startDateInstance.getDate()+1);
+         startDateInstance.setMonth(startDateInstance.getMonth()-1);
+
          var endDateFormat = endDate.trim().split('/');
-         dateCondition["lte"]=new Date(new Date(endDateFormat[2],endDateFormat[1]-1,endDateFormat[0]+1).getTime()+ 86400000);
-         dateCondition["gte"]=new Date(startDateFormat[2],startDateFormat[1]-1,startDateFormat[0]+1);
+         var endDateInstance = new Date(endDateFormat[2],endDateFormat[1],endDateFormat[0]);
+         endDateInstance.setDate(endDateInstance.getDate()+1);
+         endDateInstance.setMonth(endDateInstance.getMonth()-1);
+
+         dateCondition["lte"]=endDateInstance;
+         dateCondition["gte"]=startDateInstance;
 
          var someCondition = {};
          someCondition["date"] = dateCondition;
