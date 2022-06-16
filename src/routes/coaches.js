@@ -10,7 +10,6 @@ const {coach} =new PrismaClient();
 const dotenv = require('dotenv');
 const checkToken = require('../util/checkToken')
 
-const {isAdminCheck} = require("../util/checkAdmin");
 dotenv.config();
 
 
@@ -66,6 +65,12 @@ router.post("/Login",
     
 });
 
+// Login with token -  for Remember me
+router.post("/LoginWithToken",checkToken,
+    async (req,res)=>{
+    console.log(`Coach ${req.loggedCoach} logged in with token.`);
+    res.status(200).send("OK");
+});
 
 // Add coach
 // Only admin can add coach

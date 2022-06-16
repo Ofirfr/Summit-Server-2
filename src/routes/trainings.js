@@ -106,10 +106,13 @@ router.post('/UpdateAttendance',checkToken,async (req,res)=>{
     var trainingInstance = await getTrainingInstance(date,coachId,districtInstance.id,typeInstance.id);
     if (!trainingInstance){
         var dateFormat = date.split('/');
+        var trainingDate = new Date(dateFormat[2],dateFormat[1],dateFormat[0]);
+        trainingDate.setDate(trainingDate.getDate()+1);
+        trainingDate.setMonth(trainingDate.getMonth()-1);
         trainingInstance=await training.create({
             data:{
                 coachId: coachId,
-                date: new Date(dateFormat[2],dateFormat[1]-1,dateFormat[0]),
+                date: trainingDate,
                 districtId:districtInstance.id,
                 typeId:typeInstance.id
             }

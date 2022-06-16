@@ -105,8 +105,8 @@ router.get("/StatsByUser",checkToken,async (req,res)=>{
 
          var startDateFormat = startDate.split('/');
          var endDateFormat = endDate.trim().split('/');
-         dateCondition["lte"]=new Date(new Date(endDateFormat[2],endDateFormat[1]-1,endDateFormat[0]).getTime()+ 86400000);
-         dateCondition["gte"]=new Date(startDateFormat[2],startDateFormat[1]-1,startDateFormat[0]);
+         dateCondition["lte"]=new Date(new Date(endDateFormat[2],endDateFormat[1]-1,endDateFormat[0]+1).getTime()+ 86400000);
+         dateCondition["gte"]=new Date(startDateFormat[2],startDateFormat[1]-1,startDateFormat[0]+1);
 
          var someCondition = {};
          someCondition["date"] = dateCondition;

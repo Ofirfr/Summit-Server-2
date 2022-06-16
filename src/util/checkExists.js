@@ -12,10 +12,14 @@ const userExistsCheck =async (userName)=>{
 }
 const getTrainingInstance = async (date,coachId,districtId,typeId)=>{
     var dateFormat = date.split('/');
+    var trainingDate = new Date(dateFormat[2],dateFormat[1],dateFormat[0]);
+    trainingDate.setDate(trainingDate.getDate()+1);
+    trainingDate.setMonth(trainingDate.getMonth()-1);
+    console.log(trainingDate);
     const trainingInstance = await training.findFirst({
         where:{
             coachId,
-            date:new Date(dateFormat[2],dateFormat[1]-1,dateFormat[0]),
+            date:trainingDate,
             districtId,
             typeId
         }
