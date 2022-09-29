@@ -1,0 +1,39 @@
+version: '3.9'
+services:
+ 
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${dbName}
+      - POSTGRES_PASSWORD=${dbPass}
+      - POSTGRES_DB=SummitDB2
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  web:
+    build: .
+    ports: 
+      - "5000:5000"
+    depends_on:
+      - db
+    command: sh -c "/wait && npx prisma migrate dev --name prod && node /main/src/app.js"
+    environment:
+      - WAIT_HOSTS=db:5432
+      - WAIT_HOSTS_TIMEOUT=20
+      - WAIT_SLEEP_INTERVAL=5
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+  # prisma-postgres-api:
+  #   stdin_open: true
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: prisma-postgres-api
+  #   depends_on:
+  #     - db
+  #   ports:
+  #     - "5000:5000"
+  #   restart: always
+volumes:
+  postgres-data:
